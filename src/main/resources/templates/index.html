@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+
+<a href="/login">登录</a><br>
+<a href="/logout">注销</a><br>
+<div shiro:hasPermission="user:add">
+    <a href="/user/add">用户添加页面</a>
+</div>
+<div shiro:hasPermission="user:update">
+    <a href="/user/update">用户更新页面</a><br>
+</div>
+<!--<div shiro:hasRole="normal">-->
+    <a href="/user/normal">normal</a><br>
+<!--</div>-->
+<!--<div shiro:hasRole="vip">-->
+    <a href="/user/vip">vip</a><br>
+<!--</div>-->
+<!--<div shiro:hasRole="supervip">-->
+    <a href="/user/supervip">supervip</a>
+<!--</div>-->
+</body>
+</html>

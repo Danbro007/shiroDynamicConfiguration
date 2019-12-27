@@ -1,0 +1,28 @@
+spring:
+  thymeleaf:
+    cache: false
+
+  datasource:
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shirotest?serverTimezone=UTC
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.mapper
+
+permisson-config:
+  perms:
+    - url: /vip
+      permission: roles[vip]
+    - url: /supervip
+      permission: roles[supervip]
+    - url: /normal
+      permission: roles[normal]
+    - url: /user/add
+      permission: perms[add]
+    - url: /user/update
+      permission: perms[update]
