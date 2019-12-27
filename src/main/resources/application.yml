@@ -7,6 +7,16 @@ spring:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/shirotest?serverTimezone=UTC
+  redis:
+    host: localhost
+    port: 6379
+    jedis:
+      pool:
+        max-idle: 8
+        min-idle: 0
+        max-active: 8
+        max-wait: -1
+    timeout: 0
 
 mybatis-plus:
   configuration:

@@ -39,6 +39,7 @@ public class UserRealm extends AuthorizingRealm {
         info.addRole(user.getRole());
         //添加授权
         info.addStringPermission(user.getPerms());
+        System.out.println("授权操作");
         return info;
     }
 

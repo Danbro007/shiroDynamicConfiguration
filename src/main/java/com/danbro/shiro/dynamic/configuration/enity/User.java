@@ -2,6 +2,8 @@ package com.danbro.shiro.dynamic.configuration.enity;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @Classname User
  * @Description TODO
@@ -9,7 +11,7 @@ import lombok.Data;
  * @Author Danrbo
  */
 @Data
-public class User {
+public class User implements Serializable {
 
     private Integer id;
     private String username;

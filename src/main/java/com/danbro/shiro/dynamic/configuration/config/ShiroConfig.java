@@ -6,9 +6,14 @@ import com.danbro.shiro.dynamic.configuration.realm.UserRealm;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
+import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +35,12 @@ public class ShiroConfig {
 
     @Autowired
     PermsMap permsMap;
+
+    @Value("${spring.redis.host}")
+    private String host;
+
+    @Value("${spring.redis.port}")
+    private Integer port;
 
     /**
      * 创建ShiroFilterFactoryBean
@@ -68,10 +79,16 @@ public class ShiroConfig {
      * 创建DefaultWebSecurityManager
      */
     @Bean(name = "webSecurityManager")
-    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("realm") UserRealm userRealm){
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("realm") UserRealm userRealm,
+                                                                  @Qualifier("defaultWebSessionManager") DefaultWebSessionManager defaultWebSessionManager,
+                                                                  @Qualifier("redisCacheManager") RedisCacheManager redisCacheManager){
         DefaultWebSecurityManager webSecurityManager = new DefaultWebSecurityManager();
         //配置realm
         webSecurityManager.setRealm(userRealm);
+        //配置缓存管理器
+        webSecurityManager.setCacheManager(redisCacheManager);
+        //配置session管理器
+        webSecurityManager.setSessionManager(defaultWebSessionManager);
         return webSecurityManager;
     }
 
@@ -122,5 +139,53 @@ public class ShiroConfig {
         properties.setProperty("UnauthorizedException", "/unauthorized");
         resolver.setExceptionMappings(properties);
         return resolver;
+    }
+
+    /**
+     * 创建redis管理器，配置端口地址密码等参数
+     * @return redis管理器
+     */
+    @Bean(name = "redisManager")
+    public RedisManager getRedisManager(){
+        RedisManager redisManager = new RedisManager();
+        redisManager.setHost(host);
+        redisManager.setPort(port);
+        return redisManager;
+    }
+
+    /**
+     * 创建redis缓存管理器
+     * @param redisManager redis缓存管理器
+     * @return redis缓存管理器
+     */
+    @Bean(name = "redisCacheManager")
+    public RedisCacheManager getCacheManager(@Qualifier("redisManager")RedisManager redisManager){
+        RedisCacheManager redisCacheManager = new RedisCacheManager();
+        redisCacheManager.setRedisManager(redisManager);
+        return redisCacheManager;
+    }
+
+    /**
+     * 创建redisSessionDao，并且设置redis管理器
+     * @param redisManager redis管理器
+     * @return redisSessionDAO
+     */
+    @Bean(name = "redisSessionDAO")
+    public RedisSessionDAO getRedisSessionDAO(@Qualifier("redisManager") RedisManager redisManager){
+        RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
+        redisSessionDAO.setRedisManager(redisManager);
+        return redisSessionDAO;
+    }
+
+    /**
+     * 创建session管理器，并设置sessionDAO
+     * @param redisSessionDAO  redisSessionDAO
+     * @return session管理器
+     */
+    @Bean(name = "defaultWebSessionManager")
+    public DefaultWebSessionManager getDefaultWebSessionManager(@Qualifier("redisSessionDAO") RedisSessionDAO redisSessionDAO){
+        DefaultWebSessionManager defaultWebSessionManager = new DefaultWebSessionManager();
+        defaultWebSessionManager.setSessionDAO(redisSessionDAO);
+        return defaultWebSessionManager;
     }
 }
