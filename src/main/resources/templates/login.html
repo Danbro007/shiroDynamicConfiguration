@@ -9,9 +9,16 @@
 <form action="/login" method="post">
     用户名：<input type="text" name="username"><br>
     密码：<input type="password" name="password"><br>
+    验证码：<input type="text" name="verifyCode" placeholder="请输入验证码">
+    <a href="#" style="color: blue" onclick="refreshCode()">换一个</a>
+    <img id="verifyCode" src="/getCode" style="margin-left: 16px"><br>
     <input type="checkbox" name="rememberMe">记住我<br>
     <input type="submit" value="登录">
 </form>
-
+<script>
+    function refreshCode() {
+        document.getElementById("verifyCode").setAttribute("src","/getCode");
+    }
+</script>
 </body>
 </html>
