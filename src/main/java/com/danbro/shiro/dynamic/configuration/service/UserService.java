@@ -16,4 +16,6 @@ public interface UserService {
      */
     User selectUserByUsername(String username);
 
+    void addUser(User user);
+
 }

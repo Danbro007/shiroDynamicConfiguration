@@ -26,4 +26,9 @@ public class UserImpl implements UserService {
         userQueryWrapper.eq("username",username);
         return userMapper.selectOne(userQueryWrapper);
     }
+
+    @Override
+    public void addUser(User user) {
+        userMapper.insert(user);
+    }
 }

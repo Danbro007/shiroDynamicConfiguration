@@ -10,6 +10,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,7 +62,6 @@ public class UserRealm extends AuthorizingRealm {
             //shiro底层会抛出UnknownAccountException异常
             return null;
         }
-        //判断密码是否存在
-        return new SimpleAuthenticationInfo(user, user.getPassword(), username);
+        return new SimpleAuthenticationInfo(user, user.getPassword(), ByteSource.Util.bytes(user.getSalt()),username);
     }
 }

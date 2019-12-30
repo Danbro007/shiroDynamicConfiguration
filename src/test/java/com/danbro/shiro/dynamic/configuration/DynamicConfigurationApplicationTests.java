@@ -1,13 +1,19 @@
 package com.danbro.shiro.dynamic.configuration;
 
-import org.junit.jupiter.api.Test;
+import cn.hutool.crypto.SecureUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+
+@RunWith(SpringRunner.class)
 @SpringBootTest
-class DynamicConfigurationApplicationTests {
+public class DynamicConfigurationApplicationTests {
 
     @Test
-    void contextLoads() {
+    public void contextLoads() {
+        String s = SecureUtil.md5("123");
+        System.out.println(s);
     }
-
 }

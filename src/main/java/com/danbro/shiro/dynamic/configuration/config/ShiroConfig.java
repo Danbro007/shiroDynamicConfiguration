@@ -3,9 +3,13 @@ package com.danbro.shiro.dynamic.configuration.config;
 import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
 import com.danbro.shiro.dynamic.configuration.components.PermsMap;
 import com.danbro.shiro.dynamic.configuration.realm.UserRealm;
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.mgt.RememberMeManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
@@ -79,9 +83,10 @@ public class ShiroConfig {
      * 创建DefaultWebSecurityManager
      */
     @Bean(name = "webSecurityManager")
-    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("realm") UserRealm userRealm,
-                                                                  @Qualifier("defaultWebSessionManager") DefaultWebSessionManager defaultWebSessionManager,
-                                                                  @Qualifier("redisCacheManager") RedisCacheManager redisCacheManager){
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("defaultWebSessionManager") DefaultWebSessionManager defaultWebSessionManager,
+                                                                  @Qualifier("redisCacheManager") RedisCacheManager redisCacheManager,
+                                                                  @Qualifier("cookieRememberMeManager")RememberMeManager rememberMeManager,
+                                                                  @Qualifier("userRealm") UserRealm userRealm){
         DefaultWebSecurityManager webSecurityManager = new DefaultWebSecurityManager();
         //配置realm
         webSecurityManager.setRealm(userRealm);
@@ -89,16 +94,11 @@ public class ShiroConfig {
         webSecurityManager.setCacheManager(redisCacheManager);
         //配置session管理器
         webSecurityManager.setSessionManager(defaultWebSessionManager);
+        //配置rememberMe管理器
+        webSecurityManager.setRememberMeManager(rememberMeManager);
         return webSecurityManager;
     }
 
-    /**
-     * 创建Realm
-     */
-    @Bean(name = "realm")
-    public UserRealm getRealm(){
-        return new UserRealm();
-    }
 
     /**
      * 配置ShiroDialect，用于thymeleaf和shiro标签配合使用
@@ -188,4 +188,56 @@ public class ShiroConfig {
         defaultWebSessionManager.setSessionDAO(redisSessionDAO);
         return defaultWebSessionManager;
     }
+
+    /**
+     * 创建cookie，并且设置cookie超时时间和cookie名
+     * @return cookie对象
+     */
+    @Bean(name = "rememberMeCookie")
+    public SimpleCookie getRememberMeCookie(){
+        SimpleCookie simpleCookie = new SimpleCookie("rememberMeCookie");
+        //设置超时时间
+        simpleCookie.setMaxAge(2592000);
+        return simpleCookie;
+    }
+
+    /**
+     * 创建记住我管理器
+     * @param rememberMeCookie cookie对象
+     * @return 记住我管理器
+     */
+    @Bean(name = "cookieRememberMeManager")
+    public CookieRememberMeManager cookieRememberMeManager(@Qualifier("rememberMeCookie")SimpleCookie rememberMeCookie){
+        CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+        cookieRememberMeManager.setCookie(rememberMeCookie);
+        return cookieRememberMeManager;
+    }
+
+    /**
+     * 创建realm
+     * @param credentialsMatcher 加密算法设置
+     * @return realm对象
+     */
+    @Bean(name = "userRealm")
+    public UserRealm getUserRealm(@Qualifier("hashedCredentialsMatcher")HashedCredentialsMatcher credentialsMatcher ){
+        UserRealm userRealm = new UserRealm();
+
+        userRealm.setCredentialsMatcher(credentialsMatcher);
+        return userRealm;
+    }
+
+    /**
+     * 设置凭据匹配器的算法和散列次数
+     * @return
+     */
+    @Bean(name = "hashedCredentialsMatcher")
+    public HashedCredentialsMatcher getHashedCredentialsMatcher(){
+        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher();
+        //设置加密方式
+        matcher.setHashAlgorithmName("md5");
+        //设置散列次数
+        matcher.setHashIterations(2);
+        return matcher;
+    }
+
 }
