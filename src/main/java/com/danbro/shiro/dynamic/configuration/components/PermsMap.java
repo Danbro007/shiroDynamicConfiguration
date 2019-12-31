@@ -18,4 +18,5 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "permisson-config")
 public class PermsMap {
     private List<Map<String,String>> perms;
+    private String test;
 }
